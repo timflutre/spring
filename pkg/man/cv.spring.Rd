@@ -1,0 +1,44 @@
+\name{cv.spring}
+\alias{cv.spring}
+\title{Cross-validation function for spring fitting methods.}
+\usage{
+cv.spring(x, y, K = 5, folds = split(sample(1:nrow(x)), rep(1:K, length =
+  nrow(x))), verbose = TRUE, ...)
+}
+\arguments{
+  \item{x}{matrix of features, possibly sparsely encoded
+  (experimental). Do NOT include intercept.}
+
+  \item{y}{response vector.}
+
+  \item{K}{integer indicating the number of folds. Default
+  is 10.}
+
+  \item{folds}{list of \code{K} vectors that describes the
+  folds to use for the cross-validation. By default, the
+  folds are randomly sampled with the specified K. The same
+  folds are used for each values of \code{lambda2}.}
+
+  \item{verbose}{logical; indicates if the progression
+  should be displayed. Default is \code{TRUE}.}
+
+  \item{...}{additional parameters to overwrite the
+  defaults of the spring fitting procedure. See the
+  corresponding documentation (\code{\link{spring}}.}
+}
+\value{
+A list with two objects of class "criterion" and "model"
+for which \code{plot} methods are available.
+}
+\description{
+Function that computes K-fold cross-validated error of a
+\code{spring} fit on a grid of \code{lambda1,lambda2}.
+}
+\seealso{
+\code{\linkS4class{criterion}}, \code{\linkS4class{model}},
+\code{\link{plot,criterion-method}},
+\code{\link{plot,model-method}}.
+}
+\keyword{models,}
+\keyword{regression}
+

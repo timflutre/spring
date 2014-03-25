@@ -1,0 +1,25 @@
+Package: spring
+Type: Package
+Title: Fit the SPRING model
+Version: 0.1-0
+Date: 2013-12-02
+Author: Julien Chiquet
+Maintainer: Julien Chiquet <julien.chiquet@gmail.com>
+Description: SPRING is a regularized method for multivariate linear regression
+    with unknwon covariance which performs selection on direct links between
+    predictors and responses. The selection is driven by prior structural
+    information.
+Depends:
+    R (>= 3.0.2),
+    Rcpp,
+    ggplot2,
+    Matrix
+Imports:
+    methods,
+    reshape2,
+    scales,
+    grid,
+    gridExtra,
+    parallel
+LinkingTo: Rcpp, RcppArmadillo (>= 0.2.34)
+License: GPL (>= 2)
