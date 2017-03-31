@@ -317,7 +317,7 @@ get.criteria <- function(penalty, objects, name) {
       criterion = new("criterion",
           name        = name,
           data        = as.data.frame(do.call(rbind, crit))),
-      model = new("model",
+      model = model$new(
       lambda1     = objects[[best]]@lambda1[imin],
       lambda2     = objects[[best]]@lambda2      ,
       coef.regres = Matrix(objects[[best]]@coef.regres[[imin]]),
@@ -352,16 +352,16 @@ get.criteria <- function(penalty, objects, name) {
 ##' @docType methods
 ##' @rdname model
 ##'
-##' @exportMethod model
-setGeneric("model", function(object, lambda1, lambda2=NULL)
-           {standardGeneric("model")})
+##' @exportMethod getModel
+setGeneric("getModel", function(object, lambda1, lambda2=NULL)
+           {standardGeneric("getModel")})
 
-setMethod("model", "spring", definition =
+setMethod("getModel", "spring", definition =
           function(object, lambda1, lambda2=NULL) {
 
             ilambda1 <- which.min(abs(lambda1 - object@lambda1))
 
-            return(new("model",
+            return(model$new(
                        lambda1      = object@lambda1[[ilambda1]],
                        lambda2      = object@lambda2,
                        coef.regres  = Matrix(object@coef.regres[[ilambda1]]),
@@ -372,7 +372,7 @@ setMethod("model", "spring", definition =
 
           })
 
-setMethod("model", "list", definition =
+setMethod("getModel", "list", definition =
           function(object, lambda1, lambda2=NULL) {
 
             ## Check that all objects passed to the function are spring objects
@@ -382,6 +382,6 @@ setMethod("model", "list", definition =
 
             ilambda2 <- which.min(abs(lambda2 - sapply(object, function(obj) obj@lambda2)))
             print(ilambda2)
-            return(model(object[[ilambda2]], lambda1))
+            return(getModel(object[[ilambda2]], lambda1))
 
           })

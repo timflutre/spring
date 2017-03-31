@@ -124,7 +124,7 @@ cv.spring <- function(x, y,
   return(list(
       cv.min = list(
         criterion = new("criterion", name = "CV-error (min)", data = cv),
-        model     = new("model",
+        model     = model$new(
                       lambda1      = lambda1.min,
                       lambda2      = lambda2,
                       coef.regres  = Matrix(best.fit@coef.regres[[ind.min]]),
@@ -133,7 +133,7 @@ cv.spring <- function(x, y,
                       intercept    = Matrix(best.fit@intercept  [[ind.min]]))),
       cv.1se = list(
         criterion = new("criterion", name = "CV-error (1se)", data = cv),
-        model = new("model",
+        model = model$new(
                       lambda1      = lambda1.1se,
                       lambda2      = lambda2    ,
                       coef.regres  = Matrix(best.fit@coef.regres[[ind.1se]]),

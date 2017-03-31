@@ -24,7 +24,7 @@ cor <- 0.5
 R <- toeplitz(cor^(1:q-1))
 
 ## turn this into a "spring" model
-true.model <- new("model",
+true.model <- model$new(
                   coef.direct = Omega.xy,
                   coef.regres = Matrix(- Omega.xy \%*\% R),
                   covariance  = Matrix(R),

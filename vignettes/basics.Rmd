@@ -1,0 +1,61 @@
+---
+title: "Basic demo for spring package"
+author: "Julien Chiquet"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{basics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+First we load the library  
+```{r}
+rm(list=ls())
+library(spring)
+```
+
+We specify a model (basically, a set of parameter): this stands for the regression coefficient and the covariance matrix.
+
+```{r}
+ ## problem dimension
+p <- 20 # number of regressors
+q <- 3  # number of responses
+k <- 10 # number of non null direct effects
+
+## direct coefficients
+Omega.xy <- Matrix(0,p,q)
+Omega.xy[sample(1:(p*q),k)] <- sample(c(-1,1),k,rep=T)
+
+## covariance of the noise (residual)
+cor <- 0.5
+R <- toeplitz(cor^(1:q-1))
+
+## turn this into a "spring" model
+true.model <- model$new(
+     coef.direct = Omega.xy,
+     coef.regres = Matrix(- Omega.xy %*% R),
+     covariance  = Matrix(R),
+     intercept   = Matrix(rep(0,q),q,1))
+```
+
+Now, produce an arbitrary design matrix and use the drawResponse method to get some data
+
+```{r}
+nb.samples <- 100
+X <- matrix(rnorm(nb.samples * p), nb.samples, p)
+
+## draw some data with a given design matrix
+Y <- true.model$drawResponse(X)
+```
+
+```{r}
+out <- spring(X, Y)
+BIC <- pen.crit(out)$BIC
+plot(BIC$criterion)
+```
+
+```{r, figwidth=8}
+BIC$model$plot()
+```
+

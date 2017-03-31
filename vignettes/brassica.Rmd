@@ -195,9 +195,9 @@ cat("\n==========================================================")
 cat("\n- Compute BIC/AIC information criteria \n")
 crit <- pen.crit(out)
 
-spring.reg <- crit$BIC$model@coef.regres
-spring.dir <- crit$BIC$model@coef.direct
-cov.res    <- crit$BIC$model@covariance
+spring.reg <- crit$BIC$model$coef.regres
+spring.dir <- crit$BIC$model$coef.direct
+cov.res    <- crit$BIC$model$covariance
 
 map.reg <- plot.map( spring.reg, map, title="", plot=FALSE, show.names=TRUE, chr=c(2,8,10))
 map.dir <- plot.map(-spring.dir, map, title="", plot=FALSE, show.names=TRUE, chr=c(2,8,10))
@@ -214,6 +214,6 @@ grid_arrange_shared_legend(map.reg, map.dir, nrow=1, ncol=2, position = "right")
 
 
 ```{r}
-plot(crit$BIC$model, type="covariance", corr=TRUE, legend=FALSE)
+crit$BIC$model$plot(type="covariance", corr=TRUE, legend=FALSE)
 ```
 
