@@ -10,17 +10,19 @@ spring.generator(model, design)
 Generate multivariate data
 }
 \examples{
-\dontrun{
-##  Basic simulation settings with no particular structure
+\dontrun{##  Basic simulation settings with no particular structure
 k <- 10
 p <- 20
 q <- 3
+
 ## direct coefficients
 Omega.xy <- Matrix(0,p,q)
 Omega.xy[sample(1:(p*q),k)] <- sample(c(-1,1),k,rep=T)
+
 ## covariance of the noise (residual)
 cor <- 0.5
 R <- toeplitz(cor^(1:q-1))
+
 ## turn this into a "spring" model
 true.model <- new("model",
                   coef.direct = Omega.xy,
@@ -28,8 +30,12 @@ true.model <- new("model",
                   covariance  = Matrix(R),
                   intercept   = Matrix(rep(0,q),q,1))
 
+## design matrix
+nb.samples <- 100
+X <- matrix(rnorm(nb.samples * p), nb.samples, p)
+
 ## draw some data with a given design matrix
-dataset <- spring.generator(true.model, design)
+dataset <- spring.generator(true.model, X)
 }
 
 }

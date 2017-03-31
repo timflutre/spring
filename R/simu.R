@@ -1,28 +1,34 @@
-##' Generate multivariate data 
-##' 
-##' @examples 
-##' \dontrun{
-##' ##  Basic simulation settings with no particular structure
+##' Generate multivariate data
+##'
+##' @examples
+##' \dontrun{##  Basic simulation settings with no particular structure
 ##' k <- 10
 ##' p <- 20
 ##' q <- 3
+##'
 ##' ## direct coefficients
 ##' Omega.xy <- Matrix(0,p,q)
 ##' Omega.xy[sample(1:(p*q),k)] <- sample(c(-1,1),k,rep=T)
+##'
 ##' ## covariance of the noise (residual)
 ##' cor <- 0.5
 ##' R <- toeplitz(cor^(1:q-1))
+##'
 ##' ## turn this into a "spring" model
 ##' true.model <- new("model",
 ##'                   coef.direct = Omega.xy,
 ##'                   coef.regres = Matrix(- Omega.xy %*% R),
 ##'                   covariance  = Matrix(R),
 ##'                   intercept   = Matrix(rep(0,q),q,1))
-##' 
+##'
+##' ## design matrix
+##' nb.samples <- 100
+##' X <- matrix(rnorm(nb.samples * p), nb.samples, p)
+##'
 ##' ## draw some data with a given design matrix
-##' dataset <- spring.generator(true.model, design)
+##' dataset <- spring.generator(true.model, X)
 ##' }
-##' 
+##'
 ##' @export
 spring.generator <- function(model, design) {
 
@@ -30,15 +36,15 @@ spring.generator <- function(model, design) {
 
   n <- nrow(design)
   q <- ncol(model@covariance)
-  
+
   ## The stochastic noise
   noise <- as.matrix(matrix(rnorm(q*n),n,q) %*% chol(model@covariance))
-  
+
   ## The multivariate response matrix with covariance,
   ## heteroscedasticity and independent
   y <- predict(model, design) + noise
   r2 <- 1-colSums(noise^2)/colSums(y^2)
-  
+
   return(list(design=design, response=y, model=model, r2=r2))
 }
 
