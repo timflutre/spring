@@ -1,0 +1,17 @@
+citHeader("To cite spring in publications use:")
+
+citEntry(entry   = "Article",
+         title   = "Structured regularization for conditional Gaussian graphical models",
+         author  = personList(as.person("Julien Chiquet"),
+                                   as.person("Tristan Mary-Huard"),
+                                   as.person("Stephane Robin")),
+         journal = "Statistics and Computing",
+         year    = "2016",
+         url     = "http://link.springer.com/10.1007/s11222-016-9654-1",
+
+         textVersion =
+           paste("Chiquet, Mary-Huard, Robin (2016).",
+                 "Structured regularization for conditional Gaussian graphical models.",
+                 "Statistics and Computing.",
+                 "URL http://link.springer.com/10.1007/s11222-016-9654-1.")
+         )
