@@ -1,5 +1,5 @@
-## ' Selec Primary Relationships IN the General linear model.
-##
+##' Select Primary Relationships IN the General linear model.
+##'
 ##' Adjust a multivariate regression with structuring, sparse penalty.
 ##'
 ##' @param x matrix of features. Do NOT include intercept.
@@ -79,7 +79,8 @@ spring <- function(x, y,
                    verbose     = ifelse(length(lambda2)>1,1,2) ,
                    min.ratio   = 1e-2 ,
                    nlambda1    = ifelse(is.null(lambda1),
-                   ifelse(is.null(cov),10,50),length(lambda1)),
+                                 ifelse(is.null(cov),10,50),length(lambda1)),
+                   comp.df     = TRUE,
                    mc.cores    = min(length(lambda2), detectCores())) {
 
   ## =============================================================
@@ -132,13 +133,11 @@ spring <- function(x, y,
                         lambda2     = lbd2   ,
                         struct      = struct ,
                         cov         = cov    ,
-                        corr        = FALSE,
                         intercept   = intercept,
                         normalize   = normalize,
                         threshold   = threshold,
                         max.iter    = max.iter ,
-                        use.str.rule=TRUE,
-                        comp.df     = TRUE,
+                        comp.df     = comp.df,
                         verbose     = verbose  ,
                         min.ratio   = min.ratio,
                         nlambda1    = nlambda1)
@@ -156,12 +155,10 @@ spring.learn <- function(x, y, xbar, ybar, normx, normy,
                          lambda2   ,
                          struct    ,
                          cov       ,
-                         corr      ,
                          intercept ,
                          normalize ,
                          threshold ,
                          max.iter  ,
-                         use.str.rule,
                          comp.df   ,
                          verbose   ,
                          monitoring,
@@ -199,7 +196,7 @@ spring.learn <- function(x, y, xbar, ybar, normx, normy,
       cat("\n\nCovariance of the output known: switching to 'Oracle' mode.")
 
     ## Call to learn.par function
-    out <- learn.par.vec(SXX.L2, SXY, lambda1, cov, use.str.rule, imax.iter, ithreshold, verbose)
+    out <- learn.par.vec(SXX.L2, SXY, lambda1, cov, imax.iter, ithreshold, verbose)
     par.hat <- out$par.hat
     B.hat   <- out$B.hat
     cov.hat <- rep(list(cov),length(par.hat))
@@ -224,16 +221,12 @@ spring.learn <- function(x, y, xbar, ybar, normx, normy,
     if (verbose >1) {
       cat("\n FIRST PASS: compute the initial covariance for the whole path")
     }
-    if (corr) {
-      cov.0 <- diag(rep(1,q))
-    } else {
-      cov.0 <- diag(diag(SYY))
-    }
+    cov.0 <- diag(diag(SYY))
     ## Compute the initial covariance estimator for the whole path of lambda1
-    out <- learn.par.vec(SXX.L2, SXY, lambda1, diag(diag(SYY)), use.str.rule, imax.iter, ithreshold, verbose)
+    out <- learn.par.vec(SXX.L2, SXY, lambda1, diag(diag(SYY)), imax.iter, ithreshold, verbose)
     par.hat.0 <- out$par.hat
     cov.hat.0 <- lapply(par.hat.0, function(par) {
-      return(learn.cov(SYY,SYYm1,SXX.L2,par,corr))
+      return(learn.cov(SYY,SYYm1,SXX.L2,par))
     })
 
     if (verbose >1) {
@@ -250,7 +243,7 @@ spring.learn <- function(x, y, xbar, ybar, normx, normy,
 
       ## Inference of the parameters
       cov.hat.c <- cov.hat.0[[l]]
-      par.hat.c <- learn.par(SXX.L2, SXY, lambda1[l], lambda1.old, cov.hat.c$R, beta0=par.hat.0[[l]], maxit=imax.iter, thr=ithreshold,use.str.rule=use.str.rule)
+      par.hat.c <- learn.par(SXX.L2, SXY, lambda1[l], lambda1.old, cov.hat.c$R, beta0=par.hat.0[[l]], maxit=imax.iter, thr=ithreshold)
       B.hat.c   <- -par.hat.c %*% cov.hat.c$R
 
       ## Evolution of the criterion
@@ -269,8 +262,8 @@ spring.learn <- function(x, y, xbar, ybar, normx, normy,
         }
         ## Inference of the parameters
         par.hat.o <- par.hat.c
-        cov.hat.c <- learn.cov(SYY,SYYm1,SXX.L2,par.hat.c,corr)
-        par.hat.c <- learn.par(SXX.L2, SXY, lambda1[l], lambda1.old, cov.hat.c$R, beta0=par.hat.c, maxit=imax.iter, thr=ithreshold,use.str.rule=use.str.rule, B.hat=B.hat.c)
+        cov.hat.c <- learn.cov(SYY,SYYm1,SXX.L2,par.hat.c)
+        par.hat.c <- learn.par(SXX.L2, SXY, lambda1[l], lambda1.old, cov.hat.c$R, beta0=par.hat.c, maxit=imax.iter, thr=ithreshold, B.hat=B.hat.c)
         B.hat.c   <- -par.hat.c %*% cov.hat.c$R
 
         ## Evolution of the criterion
@@ -383,7 +376,7 @@ spring.learn <- function(x, y, xbar, ybar, normx, normy,
 
 }
 
-learn.par.vec <- function(SXX.L2, SXY, lambda1.vec, cov, use.str.rule=TRUE, maxit=1000, thr=1e-4, verbose=verbose) {
+learn.par.vec <- function(SXX.L2, SXY, lambda1.vec, cov, maxit=1000, thr=1e-4, verbose=verbose) {
 
   O.hat <- list()
   B.hat <- list()
@@ -395,65 +388,63 @@ learn.par.vec <- function(SXX.L2, SXY, lambda1.vec, cov, use.str.rule=TRUE, maxi
     setTxtProgressBar(pb, 1)
   }
 
-  O.hat[[1]] <- learn.par(SXX.L2, SXY, lambda1.vec[1], lambda1.vec[1], cov, maxit=maxit, thr=thr, use.str.rule=use.str.rule)
+  O.hat[[1]] <- learn.par(SXX.L2, SXY, lambda1.vec[1], lambda1.vec[1], cov, maxit=maxit, thr=thr)
   B.hat[[1]] <- -O.hat[[1]] %*% cov
 
   if (nlambda1 > 1) {
     for (k in 2:nlambda1) {
       if (verbose >1) {setTxtProgressBar(pb, k)}
-      O.hat[[k]] <- learn.par(SXX.L2, SXY, lambda1.vec[k], lambda1.vec[k-1], cov, beta0=O.hat[[k-1]], maxit=maxit, thr=thr,use.str.rule=use.str.rule, B.hat=B.hat[[k-1]])
+      O.hat[[k]] <- learn.par(SXX.L2, SXY, lambda1.vec[k], lambda1.vec[k-1], cov, beta0=O.hat[[k-1]], maxit=maxit, thr=thr, B.hat=B.hat[[k-1]])
       B.hat[[k]] <- -O.hat[[k]] %*% cov
     }
   }
   return(list(par.hat=O.hat,B.hat=B.hat))
 }
 
-learn.par <- function(xtx.L2, xty, lambda1, lambda1.old, cov, beta0=Matrix(0,p,q), relaxo=FALSE, use.str.rule=TRUE, maxit=1000, thr=1e-4, B.hat=NULL) {
+learn.par <- function(xtx.L2, xty, lambda1, lambda1.old, cov, beta0=Matrix(0,p,q), relaxo=FALSE, maxit=1000, thr=1e-4, B.hat=NULL) {
 
   p <- ncol(xtx.L2)
   q <- ifelse(is.null(dim(cov)),1,ncol(cov))
 
   ## recursive strong rule to discard an entire column
-  if (use.str.rule) {
-    if (is.null(B.hat)) {
+  if (is.null(B.hat)) {
       B.hat <- - beta0 %*% cov
-    }
-    null <- apply( abs(xty - xtx.L2 %*% B.hat), 1, max) < (2 *lambda1-lambda1.old)
-##    cat("\ndiscarded: ", sum(null)*q)
-##    cat(" kept: ", sum(!null)*q)
-
-    if (q == 1) {
-      AtA <- as.matrix(cov * xtx.L2[!null, !null])
-      Atb <- as.numeric(xty[!null])
-    } else {
-      AtA <- as.matrix(suppressMessages(kronecker(cov,xtx.L2[!null, !null])))
-      Atb <- as.vector(xty[!null, ])
-    }
-    if (sum(!null) != 0) {
-      beta.hat <- as.numeric(.Call("coordinate_lasso", as.vector(beta0[!null, ]), Atb, as.matrix(AtA), lambda1, thr, maxit, package="spring")$xk)
-      return(sparseMatrix(i = rep(which(!null),q), j = rep(1:q,each=sum(!null)), x = beta.hat, dims=c(p,q)))
-    } else {
-      return(beta0)
-    }
-  } else {
-    if (!is.null(beta0)) {
-      beta0 <- as.numeric(beta0)
-    } else {
-      beta0 <- rep(0,p*q)
-    }
-    if (is.null(dim(cov))) {
-      AtA <- as.matrix(cov * xtx.L2)
-      Atb <- as.numeric(xty)
-      q <- 1
-    } else {
-      AtA <- as.matrix(suppressMessages(kronecker(cov,xtx.L2)))
-      Atb <- as.vector(xty)
-      q <- ncol(cov)
-    }
-
-    beta.hat <- as.numeric(.Call("coordinate_lasso", beta0, Atb, AtA, lambda1, thr, maxit, package="spring")$xk)
-    return(Matrix(beta.hat, p, q))
   }
+  null <- apply( abs(xty - xtx.L2 %*% B.hat), 1, max) < (2 *lambda1-lambda1.old)
+  ##    cat("\ndiscarded: ", sum(null)*q)
+  ##    cat(" kept: ", sum(!null)*q)
+
+  if (q == 1) {
+    AtA <- as.matrix(cov * xtx.L2[!null, !null])
+    Atb <- as.numeric(xty[!null])
+  } else {
+    AtA <- as.matrix(suppressMessages(kronecker(cov,xtx.L2[!null, !null])))
+    Atb <- as.vector(xty[!null, ])
+  }
+  if (sum(!null) != 0) {
+    beta.hat <- as.numeric(.Call("coordinate_lasso", as.vector(beta0[!null, ]), Atb, as.matrix(AtA), lambda1, thr, maxit, PACKAGE="spring")$xk)
+    return(sparseMatrix(i = rep(which(!null),q), j = rep(1:q,each=sum(!null)), x = beta.hat, dims=c(p,q)))
+  } else {
+    return(beta0)
+  }
+  ## } else {
+  ##   if (!is.null(beta0)) {
+  ##     beta0 <- as.numeric(beta0)
+  ##   } else {
+  ##     beta0 <- rep(0,p*q)
+  ##   }
+  ##   if (is.null(dim(cov))) {
+  ##     AtA <- as.matrix(cov * xtx.L2)
+  ##     Atb <- as.numeric(xty)
+  ##     q <- 1
+  ##   } else {
+  ##     AtA <- as.matrix(suppressMessages(kronecker(cov,xtx.L2)))
+  ##     Atb <- as.vector(xty)
+  ##     q <- ncol(cov)
+  ##   }
+  ##   beta.hat <- as.numeric(.Call("coordinate_lasso", beta0, Atb, AtA, lambda1, thr, maxit, PACKAGE="spring")$xk)
+  ##   return(Matrix(beta.hat, p, q))
+  ## }
 
   ## if (relaxo) {
   ##   A <- beta.hat != 0
@@ -463,7 +454,7 @@ learn.par <- function(xtx.L2, xty, lambda1, lambda1.old, cov, beta0=Matrix(0,p,q
 
 }
 
-learn.cov <- function(SYY, SYYm1, SXX, O.xy, corr=FALSE) {
+learn.cov <- function(SYY, SYYm1, SXX, O.xy) {
 
   O.SXX.O <- crossprod(O.xy, SXX) %*% O.xy
   if (sum(abs(O.SXX.O)) < 1e-2) {
@@ -486,10 +477,6 @@ learn.cov <- function(SYY, SYYm1, SXX, O.xy, corr=FALSE) {
     Oyy <- U %*% Diagonal(x=eta) %*% Um1 %*% SYYm1
     ## R   <- SYY %*% U %*% Diagonal(x=1/eta) %*% Um1
     ## Oyy <- U %*% Diagonal(x=eta) %*% Um1 %*% SYYm1
-  }
-  if (corr) {
-    R <- cov2cor(R)
-    Oyy <- cov2cor(Oyy)
   }
 
   return(list(R=R,Oyy=Oyy))
@@ -517,8 +504,6 @@ learn.default.args <- function(n,p,user) {
     verbose     = 0    ,
     min.ratio   = 1e-2 ,
     nlambda1    = nlambda1,
-    corr        = FALSE,
-    use.str.rule=TRUE,
     comp.df     = TRUE,
     mc.cores    = min(length(lambda2), detectCores())))
 }

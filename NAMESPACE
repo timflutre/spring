@@ -1,6 +1,7 @@
 export(cv.spring)
 export(diffOp)
 export(spring)
+export(spring.generator)
 exportClasses(criterion)
 exportClasses(model)
 exportClasses(spring)

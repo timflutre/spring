@@ -18,13 +18,13 @@
 ##' @importFrom stats predict residuals deviance
 ##' @import ggplot2
 ##' @import reshape2
+##' @import grid
 ##' @import gridExtra
 ##' 
-setClassUnion("pen", c("NULL","numeric"))
 setClass("model",
   slots = list(
-  lambda1     = "pen"   ,
-  lambda2     = "pen"   ,
+  lambda1     = "numeric"   ,
+  lambda2     = "numeric"   ,
   coef.direct = "Matrix"    ,
   coef.regres = "Matrix"    ,
   covariance  = "Matrix"    ,
@@ -98,7 +98,7 @@ setMethod("plot", "model", definition =
           d.direct <- d.direct + theme(legend.position="none",plot.margin= unit(c(0,0.05,0,0), "lines"))          
         }
 
-        d <- grid.arrange(arrangeGrob(d.regres, d.direct, nrow=1),main="")
+        d <- grid_arrange_shared_legend(d.regres, d.direct, nrow=1, ncol=2)
 
         ## if (coef.shape == "matrix") {
         ##   d <- grid.arrange(arrangeGrob(d.regres, d.direct, nrow=1), g_legend(d.regres),main="")
@@ -142,10 +142,25 @@ simple.matrix.plot <- function(dplot, vmin=-max(abs(dplot$value)), vmax=max(abs(
                                             panel.background = element_blank()))
 }
 
-g_legend<-function(a.gplot){
-    tmp <- ggplot_gtable(ggplot_build(a.gplot))
-    leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
-    legend <- tmp$grobs[[leg]]
-    return(legend)
-}
+grid_arrange_shared_legend <- function(..., nrow = 1, ncol = length(list(...)), position = c("bottom", "right")) {
 
+  plots <- list(...)
+  position <- match.arg(position)
+  g <- ggplotGrob(plots[[1]] + theme(legend.position = position))$grobs
+  legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+  lheight <- sum(legend$height)
+  lwidth <- sum(legend$width)
+  gl <- lapply(plots, function(x) x + theme(legend.position = "none"))
+  gl <- c(gl, nrow = nrow, ncol = ncol)
+
+  combined <- switch(position,
+                     "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
+                                            legend,
+                                            ncol = 1,
+                                            heights = unit.c(unit(1, "npc") - lheight, lheight)),
+                     "right" = arrangeGrob(do.call(arrangeGrob, gl),
+                                           legend,
+                                           ncol = 2,
+                                           widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
+  grid.draw(combined)
+}
