@@ -1,7 +1,7 @@
 ---
 title: "Basic demo for spring package"
 author: "Julien Chiquet"
-date: "`r Sys.Date()`"
+date: "`r format(Sys.time(), '%d/%m/%Y %H:%M:%S')`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{basics}
@@ -9,10 +9,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-First we load the library  
+First we load the library:
 ```{r}
-rm(list=ls())
 library(spring)
+t0 <- proc.time()
 ```
 
 We specify a model (basically, a set of parameter): this stands for the regression coefficient and the covariance matrix.
@@ -39,8 +39,7 @@ true.model <- model$new(
      intercept   = Matrix(rep(0,q),q,1))
 ```
 
-Now, produce an arbitrary design matrix and use the drawResponse method to get some data
-
+Now, produce an arbitrary design matrix and use the drawResponse method to get some data:
 ```{r}
 nb.samples <- 100
 X <- matrix(rnorm(nb.samples * p), nb.samples, p)
@@ -49,13 +48,18 @@ X <- matrix(rnorm(nb.samples * p), nb.samples, p)
 Y <- true.model$drawResponse(X)
 ```
 
-```{r}
+```{r, fig.width=6}
 out <- spring(X, Y)
 BIC <- pen.crit(out)$BIC
 plot(BIC$criterion)
 ```
 
-```{r, figwidth=8}
+```{r, fig.width=6}
 BIC$model$plot()
 ```
 
+```{r info}
+t1 <- proc.time()
+t1 - t0
+print(sessionInfo(), locale=FALSE)
+```
