@@ -20,6 +20,9 @@ Imports:
     grid,
     gridExtra,
     parallel
+Suggests:
+    knitr
 LinkingTo: Rcpp, RcppArmadillo (>= 0.2.34)
 License: GPL (>= 2)
 RoxygenNote: 6.0.1
+VignetteBuilder: knitr
