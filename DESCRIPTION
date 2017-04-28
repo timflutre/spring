@@ -1,7 +1,7 @@
 Package: spring
 Type: Package
 Title: Fit the SPRING model
-Version: 0.1.2
+Version: 0.1.3
 Author: Julien Chiquet
 Maintainer: Julien Chiquet <julien.chiquet@gmail.com>
 Description: SPRING is a regularized method for multivariate linear regression

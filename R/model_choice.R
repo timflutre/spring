@@ -22,7 +22,7 @@
 ##' spring fitting procedure. See the corresponding documentation
 ##' (\code{\link{spring}}.
 ##'
-##' @return A list with two objects of class "criterion" and "model" for which 
+##' @return A list with two objects of class "criterion" and "model" for which
 ##' \code{plot} methods are available.
 ##'
 ##' @seealso \code{\linkS4class{criterion}}, \code{\linkS4class{model}}, \code{\link{plot,criterion-method}}, \code{\link{plot,model-method}}.
@@ -44,7 +44,7 @@ cv.spring <- function(x, y,
   p <- ncol(x)
   user <- list(...)
   defs <- learn.default.args(n-max(sapply(folds,length)),p,user)
-  args <- modifyList(defs, user)
+  args <- utils::modifyList(defs, user)
   args$verbose <- FALSE
   args$comp.df <- FALSE ## save some time
 

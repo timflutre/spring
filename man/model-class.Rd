@@ -8,10 +8,4 @@
 \description{
 Class of object returned by the \code{criteria} or \code{cv.spring} functions.
 }
-\section{Fields}{
-
-\describe{
-\item{\code{}}{}
-}}
-
 

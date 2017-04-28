@@ -2,8 +2,6 @@
 #'
 #' @description Class of object returned by the \code{criteria} or \code{cv.spring} functions.
 #'
-#' @field 
-#'  
 #' @import ggplot2
 #' @import Matrix
 #' @import reshape2
@@ -34,15 +32,15 @@ model$methods(deviance = function (newx, newy)  {
 })
 
 model$methods(drawResponse = function(design) {
-  
+
   stopifnot(ncol(design) == nrow(.self$coef.regres))
-  
+
   n <- nrow(design)
   q <- ncol(.self$covariance)
-  
+
   ## The stochastic noise
   noise <- as.matrix(matrix(rnorm(q*n),n,q) %*% chol(.self$covariance))
-  
+
   ## The multivariate response matrix with covariance,
   ## heteroscedasticity and independent
   return(.self$predict(design) + noise)
@@ -52,7 +50,7 @@ model$methods(plot = function(type=c("coefficients", "covariance"), coef.shape=c
 
       p <- nrow(.self$coef.direct)
       q <- ncol(.self$coef.direct)
-      
+
       type <- match.arg(type)
       coef.shape <- match.arg(coef.shape)
       simple.plot <- switch(coef.shape, "matrix" = simple.matrix.plot, "line" = simple.line.plot)
@@ -86,10 +84,10 @@ model$methods(plot = function(type=c("coefficients", "covariance"), coef.shape=c
         }
         if (legend) {
           d.regres <- d.regres + theme(plot.margin= unit(c(0,0.05,0,0), "lines"))
-          d.direct <- d.direct + theme(plot.margin= unit(c(0,0.05,0,0), "lines"))          
+          d.direct <- d.direct + theme(plot.margin= unit(c(0,0.05,0,0), "lines"))
         } else {
           d.regres <- d.regres + theme(legend.position="none",plot.margin= unit(c(0,0.05,0,0), "lines"))
-          d.direct <- d.direct + theme(legend.position="none",plot.margin= unit(c(0,0.05,0,0), "lines"))          
+          d.direct <- d.direct + theme(legend.position="none",plot.margin= unit(c(0,0.05,0,0), "lines"))
         }
 
         d <- grid_arrange_shared_legend(d.regres, d.direct, nrow=1, ncol=2)
@@ -98,14 +96,14 @@ model$methods(plot = function(type=c("coefficients", "covariance"), coef.shape=c
       if (plot) {print(d)}
 
       return(invisible(d))
-      
+
 })
 
 simple.line.plot <- function(dplot, vmin=-max(abs(dplot$value)), vmax=max(abs(dplot$value))) {
-  
+
   return(ggplot(data=dplot,aes(Var1,value,colour=as.factor(Var2),group=as.factor(Var2))) +
          geom_line() + geom_point() + ylim(c(vmin,vmax)) + scale_colour_discrete(name = "Outcome"))
-  
+
 }
 
 simple.matrix.plot <- function(dplot, vmin=-max(abs(dplot$value)), vmax=max(abs(dplot$value))) {

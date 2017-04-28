@@ -65,6 +65,8 @@ default value tries to avoid this, adapting to the
 in the \code{lambda1} vector.  Ignored if \code{lambda1} is
 provided.}
 
+\item{comp.df}{<...>}
+
 \item{mc.cores}{if \code{lambda2} is a vector, spring is run in
 parallel: the default is to use as many core as there are entries
 in \code{lambda2}, limited by the physical nulber of cores itself.}

@@ -54,6 +54,8 @@
 ##' norm of two successive values of the parameters the is below this
 ##' threshold. Default is \code{1e-3}.
 ##'
+##' @param comp.df <...>
+##'
 ##' @param mc.cores if \code{lambda2} is a vector, spring is run in
 ##' parallel: the default is to use as many core as there are entries
 ##' in \code{lambda2}, limited by the physical nulber of cores itself.
@@ -126,7 +128,7 @@ spring <- function(x, y,
 
 
   return(mclapply(lambda2, function(lbd2) {
-    if (verbose>0) {cat("\n FITTING FOR LAMBA2 =", lbd2, "\n")}
+    if (verbose>0) {cat("\n FITTING FOR LAMBDA2 =", lbd2, "\n")}
     out <- spring.learn(x=x, y=y, xbar=xbar,ybar,normx=normx,normy=normy,
                         SXX=SXX, SYY=SYY, SYYm1=SYYm1, SXY=SXY,
                         lambda1     = lambda1,
@@ -142,7 +144,7 @@ spring <- function(x, y,
                         min.ratio   = min.ratio,
                         nlambda1    = nlambda1)
     return(out)
-  }, mc.cores=min(detectCores(),length(lambda2))))
+  }, mc.cores=mc.cores))
 
 }
 
@@ -254,11 +256,11 @@ spring.learn <- function(x, y, xbar, ybar, normx, normy,
 
       iter <- 0
       cond    <- FALSE
-      if (verbose ){pb <- txtProgressBar(char="+",style=1); }
+      if (verbose ){pb <- utils::txtProgressBar(char="+",style=1); }
       while (!cond) {
         iter <- iter + 1
         if (verbose >1) {
-          setTxtProgressBar(pb, value=iter/max.iter)
+          utils::setTxtProgressBar(pb, value=iter/max.iter)
         }
         ## Inference of the parameters
         par.hat.o <- par.hat.c
@@ -384,8 +386,8 @@ learn.par.vec <- function(SXX.L2, SXY, lambda1.vec, cov, maxit=1000, thr=1e-4, v
 
   if (verbose >1) {
     cat("\n ")
-    pb <- txtProgressBar(min = 0, max = nlambda1, width=nlambda1, char=".")
-    setTxtProgressBar(pb, 1)
+    pb <- utils::txtProgressBar(min = 0, max = nlambda1, width=nlambda1, char=".")
+    utils::setTxtProgressBar(pb, 1)
   }
 
   O.hat[[1]] <- learn.par(SXX.L2, SXY, lambda1.vec[1], lambda1.vec[1], cov, maxit=maxit, thr=thr)
@@ -393,7 +395,7 @@ learn.par.vec <- function(SXX.L2, SXY, lambda1.vec, cov, maxit=1000, thr=1e-4, v
 
   if (nlambda1 > 1) {
     for (k in 2:nlambda1) {
-      if (verbose >1) {setTxtProgressBar(pb, k)}
+      if (verbose >1) {utils::setTxtProgressBar(pb, k)}
       O.hat[[k]] <- learn.par(SXX.L2, SXY, lambda1.vec[k], lambda1.vec[k-1], cov, beta0=O.hat[[k-1]], maxit=maxit, thr=thr, B.hat=B.hat[[k-1]])
       B.hat[[k]] <- -O.hat[[k]] %*% cov
     }

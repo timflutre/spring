@@ -28,7 +28,7 @@ spring fitting procedure. See the corresponding documentation
 (\code{\link{spring}}.}
 }
 \value{
-A list with two objects of class "criterion" and "model" for which 
+A list with two objects of class "criterion" and "model" for which
 \code{plot} methods are available.
 }
 \description{

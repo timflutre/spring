@@ -266,26 +266,26 @@ setMethod("objective", "list", definition =
 ##'
 ##' @import ggplot2 reshape2 scales grid methods
 ##' @exportMethod pen.crit
-setGeneric("pen.crit", function(object, penalty=setNames(c(2, log(N)), c("AIC","BIC"))) {
+setGeneric("pen.crit", function(object, penalty=stats::setNames(c(2, log(N)), c("AIC","BIC"))) {
              N <- unique(sapply(object, function(obj) nrow(residuals(obj)[[1]])))
              standardGeneric("pen.crit")
            })
 
 setMethod("pen.crit", "spring", definition =
-          function(object, penalty=setNames(c(2, log(N)), c("AIC","BIC"))) {
+          function(object, penalty=stats::setNames(c(2, log(N)), c("AIC","BIC"))) {
             N <- unique(sapply(object, function(obj) nrow(residuals(obj)[[1]])))
             return(pen.crit(list(object)))
           })
 
 setMethod("pen.crit", "list", definition =
-          function(object, penalty=setNames(c(2, log(N)), c("AIC","BIC"))) {
+          function(object, penalty=stats::setNames(c(2, log(N)), c("AIC","BIC"))) {
 
             ## Check that all objects passed to the function are spring objects
             stopifnot(all(sapply(object, class)=="spring"))
             N <- unique(sapply(object, function(obj) nrow(residuals(obj)[[1]])))
             if (length(N) != 1) {stop("\nThe same data sould be use for every single spring fits.")}
 
-            return(setNames(lapply(1:length(penalty),
+            return(stats::setNames(lapply(1:length(penalty),
                           function(ipen) {
                             get.criteria(penalty[ipen], object, names(penalty)[ipen])
                           }
