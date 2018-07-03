@@ -1,2 +1,9 @@
 ## Use the R_HOME indirection to support installations of multiple R version
-PKG_LIBS = `$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"` $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+## https://stackoverflow.com/questions/45829647/rcpparmadillo-failing-to-install-on-ubuntu16-04#comment78617181_45829647
+## https://stackoverflow.com/a/47095547/597069
+CXX_STD = CXX11
+PKG_CFLAGS = $(SHLIB_OPENMP_CFLAGS)
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
+PKG_CXX11FLAGS = $(SHLIB_OPENMP_CXX11FLAGS)
+PKG_CXX14FLAGS = $(SHLIB_OPENMP_CXX14FLAGS)
+PKG_LIBS = `$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"` $(SHLIB_OPENMP_CFLAGS) $(SHLIB_OPENMP_CXXFLAGS) $(SHLIB_OPENMP_CXX11FLAGS) $(SHLIB_OPENMP_CXX14FLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
