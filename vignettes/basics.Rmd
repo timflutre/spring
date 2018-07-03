@@ -15,10 +15,12 @@ library(spring)
 t0 <- proc.time()
 ```
 
-We specify a model (basically, a set of parameter): this stands for the regression coefficient and the covariance matrix.
+We specify a model (basically, a set of parameters): this stands for the regression coefficient and the covariance matrix.
 
 ```{r}
- ## problem dimension
+set.seed(1234)
+
+## problem dimension
 p <- 20 # number of regressors
 q <- 3  # number of responses
 k <- 10 # number of non null direct effects
@@ -26,10 +28,17 @@ k <- 10 # number of non null direct effects
 ## direct coefficients
 Omega.xy <- Matrix(0,p,q)
 Omega.xy[sample(1:(p*q),k)] <- sample(c(-1,1),k,rep=T)
+Omega.xy
+## plot this matrix in the same order as above
+tmp <- as.matrix(Omega.xy)
+image(t(tmp)[,nrow(tmp):1], main="Direct coefficients (Omega_xy)",
+      xlab="responses", ylab="predictors",
+      axes=FALSE, col=c("red", "white", "blue"))
+grid(nx=q, ny=p, col="black")
 
 ## covariance of the noise (residual)
 cor <- 0.5
-R <- toeplitz(cor^(1:q-1))
+(R <- toeplitz(cor^(1:q-1)))
 
 ## turn this into a "spring" model
 true.model <- model$new(
@@ -39,7 +48,7 @@ true.model <- model$new(
      intercept   = Matrix(rep(0,q),q,1))
 ```
 
-Now, produce an arbitrary design matrix and use the drawResponse method to get some data:
+Now, produce an arbitrary design matrix and use the `drawResponse` method to get some data:
 ```{r}
 nb.samples <- 100
 X <- matrix(rnorm(nb.samples * p), nb.samples, p)
@@ -56,6 +65,31 @@ plot(BIC$criterion)
 
 ```{r, fig.width=6}
 BIC$model$plot()
+```
+
+Stability selection:
+```{r, eval=FALSE}
+library(stabs)
+set.seed(5678)
+
+fitfunSpring <- function(x, y, q, ...){
+  fit <- spring(x=x, y=y, ...)
+  BIC <- pen.crit(fit)$BIC
+  selected <- as.vector(BIC$model$coef.direct)
+  is.sel <- selected != 0
+  if(any(is.sel))
+    selected[is.sel] <- 1
+  selected <- as.logical(selected)
+  path <- NULL
+  return(list(selected=selected, path=path))
+}
+
+stab.spring <- stabsel(x=X, y=as.matrix(Y),
+                       PFER=1, B=2, q=2, mc.cores=1, # to debug
+                       ## PFER=1, B=50, q=max(5, 14),#min(2 * round(nrow(X)/log(ncol(X))/10)*10, ncol(X))),
+                       fitfun=fitfunSpring,
+                       args.fitfun=list(struct=sparseMatrix(i=1:p, j=1:p,
+                                                            x=rep(1, p))))
 ```
 
 ```{r info}
